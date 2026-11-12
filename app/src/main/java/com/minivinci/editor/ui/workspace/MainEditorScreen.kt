@@ -15,20 +15,31 @@ import com.minivinci.editor.core.engine.VideoEngine
 import com.minivinci.editor.core.timeline.ClipSplitter
 import com.minivinci.editor.core.timeline.TimelineClip
 import com.minivinci.editor.core.timeline.Timecode
+import com.minivinci.editor.core.timeline.TrackType
 
 @Composable
 fun MainEditorScreen(
     videoEngine: VideoEngine,
     audioEngine: AudioEngine,
-    projectViewModel: ProjectViewModel = viewModel() // حقن الـ ViewModel لربط قاعدة البيانات
+    projectViewModel: ProjectViewModel = viewModel()
 ) {
-    // حالة التايم لاين والمقاطع الحالية
-    var selectedClip by remember { mutableStateOf<TimelineClip?>(null) }
+    // حالة المقطع المختار حالياً للقص أو التعديل
+    var selectedClip by remember {
+        mutableStateOf<TimelineClip?>(
+            TimelineClip(
+                id = "clip_01",
+                sourcePath = "/storage/emulated/0/DCIM/Camera/sample.mp4",
+                startTime = Timecode(frame = 0),
+                duration = Timecode(frame = 150), // 5 ثوانٍ افتراضياً عند 30fps
+                trackIndex = 0
+            )
+        )
+    }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF1E1E1E)) // خلفية داكنة تناسب البرامج الاحترافية مثل DaVinci
+            .background(Color(0xFF1E1E1E)) // خلفية داكنة احترافية (DaVinci Style)
     ) {
         // 1. شاشة المعاينة العليا (Preview Window)
         Box(
@@ -52,22 +63,25 @@ fun MainEditorScreen(
                 .padding(8.dp),
             horizontalArrangement = Arrangement.SpaceAround
         ) {
-            Button(onClick = {
-                // تفعيل خوارزمية القص وتفكيك المقطع وحفظ الحالة في قاعدة البيانات
-                selectedClip?.let { clip ->
-                    val splitPoint = Timecode(frame = 50) // مثال لنقطة القص
-                    val result = ClipSplitter.splitClip(clip, splitPoint)
-                    if (result != null) {
-                        // تم القص بنجاح وحفظ المشروع في قاعدة البيانات Room لتجربة الربط
-                        projectViewModel.createNewProject("مشروع مقصوص - ${System.currentTimeMillis()}")
+            Button(
+                onClick = {
+                    selectedClip?.let { clip ->
+                        // تنفيذ نقطة القص عند الفريم 50
+                        val splitPoint = Timecode(frame = 50)
+                        val result = ClipSplitter.splitClip(clip, splitPoint)
+                        if (result != null) {
+                            // تم القص بنجاح، نقوم بحفظ حالة المشروع في قاعدة البيانات Room
+                            projectViewModel.createNewProject("مشروع مقصوص - ${System.currentTimeMillis()}")
+                        }
                     }
-                }
-            }) {
-                Text("Blade / Split (قص)")
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF007ACC))
+            ) {
+                Text("Blade / Split (قص)", color = Color.White)
             }
         }
 
-        // 3. مساحة التايم لاين متعدد المسارات (Multitrack Timeline)
+        // 3. مساحة التايم لاين متعدد المسارات (Multitrack Timeline V1, A1)
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -75,10 +89,23 @@ fun MainEditorScreen(
                 .background(Color(0xFF252525)),
             contentAlignment = Alignment.Center
         ) {
-            Text(
-                text = "Multitrack Timeline (V1, V2, A1)",
-                color = Color.LightGray
-            )
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = "Multitrack Timeline",
+                    color = Color.LightGray,
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                // عرض معلومات المقطع الحالي إن وجد
+                Text(
+                    text = if (selectedClip != null) "Active Clip: ${selectedClip!!.id} (Duration: ${selectedClip!!.duration.frame} frames)" else "No Clip Selected",
+                    color = Color(0xFF88CC88),
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
         }
     }
 }
