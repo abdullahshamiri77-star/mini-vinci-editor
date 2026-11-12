@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.util.UUID
 
 class ProjectViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -31,11 +32,13 @@ class ProjectViewModel(application: Application) : AndroidViewModel(application)
     }
 
     // حفظ مشروع جديد وتحديث القائمة فوراً
-    fun createNewProject(name: String) {
+    fun createNewProject(projectTitle: String) {
         viewModelScope.launch {
             val newProject = ProjectEntity(
-                projectName = name,
-                createdAt = System.currentTimeMillis()
+                id = UUID.randomUUID().toString(), // توليد معرف فريد للمشروع
+                title = projectTitle,
+                lastModified = System.currentTimeMillis(),
+                timelineDataJson = "{}" // هيكل افتراضي فارغ للتايم لاين مبدئياً
             )
             repository.saveProject(newProject)
             loadProjects() // إعادة تحميل القائمة لتحديث الواجهة
