@@ -12,10 +12,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.minivinci.editor.core.database.ProjectViewModel
 import com.minivinci.editor.core.engine.AudioEngine
 import com.minivinci.editor.core.engine.VideoEngine
+import com.minivinci.editor.core.timeline.Clip
 import com.minivinci.editor.core.timeline.ClipSplitter
-import com.minivinci.editor.core.timeline.TimelineClip
-import com.minivinci.editor.core.timeline.Timecode
-import com.minivinci.editor.core.timeline.TrackType
 
 @Composable
 fun MainEditorScreen(
@@ -23,15 +21,16 @@ fun MainEditorScreen(
     audioEngine: AudioEngine,
     projectViewModel: ProjectViewModel = viewModel()
 ) {
-    // حالة المقطع المختار حالياً للقص أو التعديل
+    // حالة المقطع باستخدام نموذج Clip الجديد
     var selectedClip by remember {
-        mutableStateOf<TimelineClip?>(
-            TimelineClip(
+        mutableStateOf<Clip?>(
+            Clip(
                 id = "clip_01",
-                sourcePath = "/storage/emulated/0/DCIM/Camera/sample.mp4",
-                startTime = Timecode(frame = 0),
-                duration = Timecode(frame = 150), // 5 ثوانٍ افتراضياً عند 30fps
-                trackIndex = 0
+                mediaId = "media_01",
+                startFrame = 0L,
+                sourceInFrame = 0L,
+                durationFrames = 150L,
+                effects = emptyList()
             )
         )
     }
@@ -39,9 +38,9 @@ fun MainEditorScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF1E1E1E)) // خلفية داكنة احترافية (DaVinci Style)
+            .background(Color(0xFF1E1E1E))
     ) {
-        // 1. شاشة المعاينة العليا (Preview Window)
+        // 1. شاشة المعاينة العليا
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -55,7 +54,7 @@ fun MainEditorScreen(
             )
         }
 
-        // 2. شريط الأدوات والتحكم بالقطع (Toolbar / Blade Action)
+        // 2. شريط الأدوات والتحكم بالقطع (Blade / Split)
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -66,11 +65,10 @@ fun MainEditorScreen(
             Button(
                 onClick = {
                     selectedClip?.let { clip ->
-                        // تنفيذ نقطة القص عند الفريم 50
-                        val splitPoint = Timecode(frame = 50)
+                        val splitPoint = 50L
                         val result = ClipSplitter.splitClip(clip, splitPoint)
                         if (result != null) {
-                            // تم القص بنجاح، نقوم بحفظ حالة المشروع في قاعدة البيانات Room
+                            selectedClip = result.leftClip
                             projectViewModel.createNewProject("مشروع مقصوص - ${System.currentTimeMillis()}")
                         }
                     }
@@ -81,7 +79,7 @@ fun MainEditorScreen(
             }
         }
 
-        // 3. مساحة التايم لاين متعدد المسارات (Multitrack Timeline V1, A1)
+        // 3. مساحة التايم لاين متعدد المسارات
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -99,9 +97,8 @@ fun MainEditorScreen(
                     style = MaterialTheme.typography.titleMedium
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                // عرض معلومات المقطع الحالي إن وجد
                 Text(
-                    text = if (selectedClip != null) "Active Clip: ${selectedClip!!.id} (Duration: ${selectedClip!!.duration.frame} frames)" else "No Clip Selected",
+                    text = if (selectedClip != null) "Active Clip: ${selectedClip!!.id} (Frames: ${selectedClip!!.durationFrames})" else "No Clip Selected",
                     color = Color(0xFF88CC88),
                     style = MaterialTheme.typography.bodySmall
                 )
