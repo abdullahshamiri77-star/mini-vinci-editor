@@ -21,7 +21,10 @@ fun MainEditorScreen(
     audioEngine: AudioEngine,
     projectViewModel: ProjectViewModel = viewModel()
 ) {
-    // حالة المقطع باستخدام نموذج Clip الجديد
+    // مراقبة حالة التشغيل والإطار الحالي من VideoEngine مباشرة
+    val isPlaying by videoEngine.isPlaying.collectAsState()
+    val currentFrame by videoEngine.currentFrame.collectAsState()
+
     var selectedClip by remember {
         mutableStateOf<Clip?>(
             Clip(
@@ -38,9 +41,9 @@ fun MainEditorScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF1E1E1E))
+            .background(Color(0xFF1E1E1E)) // DaVinci Dark Theme
     ) {
-        // 1. شاشة المعاينة العليا
+        // 1. شاشة المعاينة العليا (Preview Window)
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -48,28 +51,55 @@ fun MainEditorScreen(
                 .background(Color.Black),
             contentAlignment = Alignment.Center
         ) {
-            Text(
-                text = "VisionStudio — Preview Pipeline",
-                color = Color.White
-            )
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = if (isPlaying) "▶ Playing (Frame: $currentFrame)" else "⏸ Paused (Frame: $currentFrame)",
+                    color = if (isPlaying) Color(0xFF88CC88) else Color.White,
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "VisionStudio Live Preview Pipeline",
+                    color = Color.Gray,
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
         }
 
-        // 2. شريط الأدوات والتحكم بالقطع (Blade / Split)
+        // 2. شريط أدوات التحكم والتشغيل (Playback Controls & Blade)
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(Color(0xFF2D2D2D))
                 .padding(8.dp),
-            horizontalArrangement = Arrangement.SpaceAround
+            horizontalArrangement = Arrangement.SpaceAround,
+            verticalAlignment = Alignment.CenterVertically
         ) {
+            // زر التشغيل / الإيقاف المؤقت المباشر
+            Button(
+                onClick = {
+                    if (isPlaying) {
+                        videoEngine.pause()
+                    } else {
+                        videoEngine.play()
+                    }
+                },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (isPlaying) Color(0xFFCC3333) else Color(0xFF28A745)
+                )
+            ) {
+                Text(if (isPlaying) "Pause (إيقاف)" else "Play (تشغيل)", color = Color.White)
+            }
+
+            // زر القص (Blade / Split)
             Button(
                 onClick = {
                     selectedClip?.let { clip ->
-                        val splitPoint = 50L
+                        val splitPoint = currentFrame.coerceIn(clip.startFrame + 1, clip.startFrame + clip.durationFrames - 1)
                         val result = ClipSplitter.splitClip(clip, splitPoint)
                         if (result != null) {
                             selectedClip = result.leftClip
-                            projectViewModel.createNewProject("مشروع مقصوص - ${System.currentTimeMillis()}")
+                            projectViewModel.createNewProject("مشروع مقصوص عند الإطار $splitPoint")
                         }
                     }
                 },
@@ -92,13 +122,13 @@ fun MainEditorScreen(
                 verticalArrangement = Arrangement.Center
             ) {
                 Text(
-                    text = "Multitrack Timeline",
+                    text = "Multitrack Timeline Engine",
                     color = Color.LightGray,
                     style = MaterialTheme.typography.titleMedium
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = if (selectedClip != null) "Active Clip: ${selectedClip!!.id} (Frames: ${selectedClip!!.durationFrames})" else "No Clip Selected",
+                    text = if (selectedClip != null) "Active Clip: ${selectedClip!!.id} | Duration: ${selectedClip!!.durationFrames}f" else "No Clip Selected",
                     color = Color(0xFF88CC88),
                     style = MaterialTheme.typography.bodySmall
                 )
