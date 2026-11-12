@@ -5,8 +5,10 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "projects")
 data class ProjectEntity(
-    @PrimaryKey val id: String,
-    val title: String,
-    val lastModified: Long,
-    val timelineDataJson: String // لحفظ حالة التايم لاين والمقاطع كملف نصي هيكلي
+    @PrimaryKey
+    val id: String,
+    val name: String,
+    val createdAt: Long,
+    val modifiedAt: Long,
+    val fps: Int = 30
 )
