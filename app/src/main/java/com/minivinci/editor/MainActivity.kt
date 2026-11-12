@@ -3,44 +3,46 @@ package com.minivinci.editor
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.runtime.*
-import com.minivinci.editor.ui.screens.MainEditorScreen
-import com.minivinci.editor.ui.components.MediaImportView
-import com.minivinci.editor.utils.VideoProcessor
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.ui.Modifier
+import com.minivinci.editor.core.engine.AudioEngine
+import com.minivinci.editor.core.engine.VideoEngine
+import com.minivinci.editor.ui.workspace.MainEditorScreen
 
 class MainActivity : ComponentActivity() {
+
+    private lateinit var videoEngine: VideoEngine
+    private lateinit var audioEngine: AudioEngine
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // تهيئة محركات VisionStudio الأساسية
+        videoEngine = VideoEngine(applicationContext)
+        audioEngine = AudioEngine(applicationContext)
+
         setContent {
-            // حالة للتحكم في إظهار أو إخفاء نافذة استيراد الوسائط
-            var showImportDialog by remember { mutableStateOf(false) }
-
-            // عرض واجهة المونتاج الرئيسية
-            MainEditorScreen(
-                onImportClick = {
-                    // عند الضغط على زر استيراد، تظهر نافذة اختيار الوسائط
-                    showImportDialog = true
-                },
-                onSplitClick = {
-                    // تجربة محرك القص (VideoProcessor)
-                    // VideoProcessor.splitClipAtTime(...)
-                },
-                onExtractAudioClick = {
-                    // تجربة محرك فصل الصوت
-                    // VideoProcessor.extractAudioFromVideo(...)
+            MaterialTheme {
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    // تشغيل واجهة المونتاج الاحترافية ومررنا إليها المحركات
+                    MainEditorScreen(
+                        videoEngine = videoEngine,
+                        audioEngine = audioEngine
+                    )
                 }
-            )
-
-            // إذا كانت الحالة تقتضي إظهار نافذة الاستيراد، يتم عرضها فوق الشاشة
-            if (showImportDialog) {
-                MediaImportView(
-                    onDismiss = { showImportDialog = false },
-                    onMediaSelected = { selectedItem ->
-                        // تم اختيار مقطع، نقوم بإغلاق النافذة (يمكنك هنا إضافته للمسار لاحقاً)
-                        showImportDialog = false
-                    }
-                )
             }
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        // تنظيف موارد المحركات عند إغلاق التطبيق لضمان عدم تسريب الذاكرة
+        videoEngine.release()
+        audioEngine.release()
     }
 }
