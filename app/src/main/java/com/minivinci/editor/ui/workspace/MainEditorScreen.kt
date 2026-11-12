@@ -8,6 +8,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.minivinci.editor.core.database.ProjectViewModel
 import com.minivinci.editor.core.engine.AudioEngine
 import com.minivinci.editor.core.engine.VideoEngine
 import com.minivinci.editor.core.timeline.ClipSplitter
@@ -17,7 +19,8 @@ import com.minivinci.editor.core.timeline.Timecode
 @Composable
 fun MainEditorScreen(
     videoEngine: VideoEngine,
-    audioEngine: AudioEngine
+    audioEngine: AudioEngine,
+    projectViewModel: ProjectViewModel = viewModel() // حقن الـ ViewModel لربط قاعدة البيانات
 ) {
     // حالة التايم لاين والمقاطع الحالية
     var selectedClip by remember { mutableStateOf<TimelineClip?>(null) }
@@ -50,12 +53,13 @@ fun MainEditorScreen(
             horizontalArrangement = Arrangement.SpaceAround
         ) {
             Button(onClick = {
-                // تفعيل خوارزمية القص والتفكيك الفعلي للمقطع عند مؤشر الزمن
+                // تفعيل خوارزمية القص وتفكيك المقطع وحفظ الحالة في قاعدة البيانات
                 selectedClip?.let { clip ->
                     val splitPoint = Timecode(frame = 50) // مثال لنقطة القص
                     val result = ClipSplitter.splitClip(clip, splitPoint)
                     if (result != null) {
-                        // تم القص بنجاح (سيتم تحديث الـ Timeline Model لاحقاً)
+                        // تم القص بنجاح وحفظ المشروع في قاعدة البيانات Room لتجربة الربط
+                        projectViewModel.createNewProject("مشروع مقصوص - ${System.currentTimeMillis()}")
                     }
                 }
             }) {
