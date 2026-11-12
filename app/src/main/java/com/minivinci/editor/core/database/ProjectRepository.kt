@@ -1,21 +1,24 @@
 package com.minivinci.editor.core.database
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.flow.Flow
 
 class ProjectRepository(private val projectDao: ProjectDao) {
 
-    // جلب جميع المشاريع المحفوظة مرتبة من الأحدث للأقدم
-    suspend fun getAllProjects(): List<ProjectEntity> {
-        return withContext(Dispatchers.IO) {
-            projectDao.getAllProjects()
-        }
+    // جلب كافة المشاريع كتدفق بيانات حي (Flow)
+    val allProjects: Flow<List<ProjectEntity>> = projectDao.getAllProjects()
+
+    // حفظ أو تحديث مشروع في قاعدة البيانات
+    suspend fun saveProject(project: ProjectEntity) {
+        projectDao.insertProject(project)
     }
 
-    // حفظ أو تحديث مشروع محلياً
-    suspend fun saveProject(project: ProjectEntity) {
-        withContext(Dispatchers.IO) {
-            projectDao.saveProject(project)
-        }
+    // جلب مشروع بواسطة معرّفه
+    suspend fun getProjectById(projectId: String): ProjectEntity? {
+        return projectDao.getProjectById(projectId)
+    }
+
+    // حذف مشروع
+    suspend fun deleteProject(projectId: String) {
+        projectDao.deleteProject(projectId)
     }
 }
