@@ -1,34 +1,28 @@
 package com.minivinci.editor.core.engine
 
 import android.content.Context
-import android.net.Uri
 
 class AudioEngine(private val context: Context) {
 
-    private var currentAudioUri: Uri? = null
-    private var volumeLevel: Float = 1.0f // مستوى الصوت الافتراضي (100%)
+    private var isInitialized = false
 
-    /**
-     * تحميل وتجهيز الملف الصوتي للمسار A1
-     */
-    fun loadAudioSource(uri: Uri) {
-        currentAudioUri = uri
-        // سيتم ربط هذا لاحقاً بمعالج الصوتيات ومزج المسارات
+    fun initialize() {
+        if (!isInitialized) {
+            // تهيئة مشغل الصوتيات أو مكتبات المعالجة الصوتية (مثل Oboe أو MediaPlayer)
+            isInitialized = true
+        }
     }
 
-    /**
-     * ضبط مستوى الصوت للمقطع الصوتي
-     */
-    fun setVolume(level: Float) {
-        volumeLevel = level.coerceIn(0.0f, 2.0f)
+    fun playAudioTrack(mediaUri: String, startFrame: Long) {
+        // تشغيل المسار الصوتي متزامناً مع إطار الفيديو
     }
 
-    fun getVolume(): Float = volumeLevel
+    fun stopAudio() {
+        // إيقاف جميع تدفقات الصوت
+    }
 
-    /**
-     * تنظيف الموارد وتحرير الذاكرة
-     */
     fun release() {
-        currentAudioUri = null
+        isInitialized = false
+        // تحرير موارد الصوت
     }
 }
