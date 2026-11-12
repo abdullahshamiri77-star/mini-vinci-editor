@@ -1,4 +1,4 @@
-name: Build Mini-DaVinci APK
+name: Build Android APK
 
 on:
   push:
@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Repository
+    - name: Checkout Code
       uses: actions/checkout@v4
 
     - name: Set up JDK 17
@@ -19,7 +19,7 @@ jobs:
         distribution: 'temurin'
         java-version: '17'
 
-    - name: Cache Gradle Packages
+    - name: Setup Gradle Cache
       uses: actions/cache@v4
       with:
         path: |
@@ -29,7 +29,7 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-gradle-
 
-    - name: Grant Execute Permission for Gradlew
+    - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
     - name: Build Debug APK
@@ -38,5 +38,5 @@ jobs:
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: minivinci-debug-apk
+        name: app-debug
         path: app/build/outputs/apk/debug/app-debug.apk
