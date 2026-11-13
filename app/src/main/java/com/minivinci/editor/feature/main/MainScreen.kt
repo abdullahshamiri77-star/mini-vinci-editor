@@ -12,6 +12,7 @@ import com.minivinci.editor.feature.edit.EditViewModel
 import com.minivinci.editor.feature.fusion.FusionScreen
 import com.minivinci.editor.feature.fusion.FusionViewModel
 
+// تعريف الشاشات الأساسية (مُعرّف هنا مرة واحدة فقط لتجنب التكرار)
 enum class StudioScreen {
     EDIT,
     COLOR,
