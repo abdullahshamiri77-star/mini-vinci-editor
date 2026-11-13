@@ -13,6 +13,7 @@ import com.minivinci.editor.core.engine.AudioEngine
 import com.minivinci.editor.core.engine.VideoEngine
 import com.minivinci.editor.feature.color.ColorViewModel
 import com.minivinci.editor.feature.edit.EditViewModel
+import com.minivinci.editor.feature.fusion.FusionViewModel
 import com.minivinci.editor.feature.main.StudioMainHost
 
 class MainActivity : ComponentActivity() {
@@ -23,23 +24,23 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // تهيئة محركات VisionStudio الأساسية
         videoEngine = VideoEngine(applicationContext)
         audioEngine = AudioEngine(applicationContext)
 
         setContent {
             val editViewModel: EditViewModel = viewModel()
             val colorViewModel: ColorViewModel = viewModel()
+            val fusionViewModel: FusionViewModel = viewModel()
 
             MaterialTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = Color(0xFF121212)
                 ) {
-                    // استدعاء المضيف الرئيسي للتنقل بين شاشات Edit و Color
                     StudioMainHost(
                         editViewModel = editViewModel,
-                        colorViewModel = colorViewModel
+                        colorViewModel = colorViewModel,
+                        fusionViewModel = fusionViewModel
                     )
                 }
             }
@@ -48,7 +49,6 @@ class MainActivity : ComponentActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        // تنظيف موارد المحركات عند إغلاق التطبيق لضمان عدم تسريب الذاكرة
         videoEngine.release()
         audioEngine.release()
     }
