@@ -12,7 +12,6 @@ import com.minivinci.editor.feature.edit.EditViewModel
 import com.minivinci.editor.feature.fusion.FusionScreen
 import com.minivinci.editor.feature.fusion.FusionViewModel
 
-// تعريف الشاشات الأساسية (مُعرّف هنا مرة واحدة فقط لتجنب التكرار)
 enum class StudioScreen {
     EDIT,
     COLOR,
@@ -29,7 +28,6 @@ fun StudioMainHost(
 
     Scaffold(
         bottomBar = {
-            // شريط التنقل السفلي المستوحى من مساحات عمل DaVinci Resolve
             NavigationBar(
                 containerColor = Color(0xFF1E1E1E)
             ) {
