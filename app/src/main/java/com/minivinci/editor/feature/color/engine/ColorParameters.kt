@@ -21,6 +21,4 @@ data class ColorParameters(
     val highlightRed: Float = 0f,
     val highlightGreen: Float = 0f,
     val highlightBlue: Float = 0f
-) {
-    companion5: Companion = Companion // لترتيب الثوابت الافتراضية للضبط اللوني
-}
+)
