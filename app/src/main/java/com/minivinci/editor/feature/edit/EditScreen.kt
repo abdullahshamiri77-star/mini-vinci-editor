@@ -120,7 +120,7 @@ fun EditScreen(
                                     onClick = {
                                         viewModel.toggleTrackMute(track.trackId)
                                     },
-                                    modifier.height(36.dp)
+                                    modifier = Modifier.height(36.dp)
                                 ) {
                                     Text(
                                         text = if (track.isMuted) "Muted" else "Active",
@@ -132,6 +132,8 @@ fun EditScreen(
                     }
                 }
             }
+
+            Spacer(modifier = Modifier.height(8.dp))
 
             // أدوات التحكم السريعة في التعديل
             Row(
@@ -161,4 +163,3 @@ fun EditScreen(
         }
     }
 }
-
