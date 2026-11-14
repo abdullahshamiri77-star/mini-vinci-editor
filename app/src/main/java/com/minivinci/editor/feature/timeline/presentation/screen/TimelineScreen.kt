@@ -23,17 +23,15 @@ import com.minivinci.editor.feature.timeline.domain.model.TrackType
 import com.minivinci.editor.feature.timeline.presentation.viewmodel.TimelineViewModel
 
 @Composable
-fn TimelineScreen(viewModel: TimelineViewModel) {
+fun TimelineScreen(viewModel: TimelineViewModel) {
     val projectState by viewModel.projectState.collectAsState()
     val currentPositionUs by viewModel.currentPositionUs.collectAsState()
 
-    // مستعرض ملفات أندرويد الحقيقي لاستيراد الفيديو والصوت الفعلي
     val videoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         uri?.let { selectedUri ->
-            // استيراد الملف وإضافته تلقائياً للمسار الرئيسي V1
-            viewModel.importAndAddClip(selectedUri.toString(), "v1")
+            viewModel.addRealClip(selectedUri.toString(), "v1")
         }
     }
 
@@ -43,7 +41,6 @@ fn TimelineScreen(viewModel: TimelineViewModel) {
             .background(Color(0xFF121212))
             .padding(12.dp)
     ) {
-        // --- الشريط العلوي الاحترافي (Mini-DaVinci Studio) ---
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -64,7 +61,6 @@ fn TimelineScreen(viewModel: TimelineViewModel) {
             }
 
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                // زر الاستيراد الحقيقي
                 Button(
                     onClick = { videoPickerLauncher.launch("video/*") },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1976D2)),
@@ -73,9 +69,8 @@ fn TimelineScreen(viewModel: TimelineViewModel) {
                     Text("استيراد", color = Color.White, fontSize = 12.sp)
                 }
 
-                // زر القص الحقيقي (Blade)
                 Button(
-                    onClick = { /* تفعيل القص عند مؤشر التشغيل */ },
+                    onClick = { },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF424242)),
                     contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
                 ) {
@@ -86,7 +81,6 @@ fn TimelineScreen(viewModel: TimelineViewModel) {
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        // --- شاشة المعاينة التفاعلية الحقيقية (Preview Window) ---
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -111,7 +105,6 @@ fn TimelineScreen(viewModel: TimelineViewModel) {
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // --- عنوان التايملاين ---
         Text(
             text = "Timeline – المسارات (V4 إلى V1 و A1)",
             color = Color.White,
@@ -119,7 +112,6 @@ fn TimelineScreen(viewModel: TimelineViewModel) {
             modifier = Modifier.padding(bottom = 6.dp)
         )
 
-        // --- مسارات التايملاين المتعددة الاحترافية ---
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
@@ -154,7 +146,6 @@ fun TrackRowItem(track: TimelineTrack) {
             .background(Color(0xFF1E1E1E)),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // مسمى المسار الجانبي (مثل V1, V2, A1)
         Box(
             modifier = Modifier
                 .width(45.dp)
@@ -170,7 +161,6 @@ fun TrackRowItem(track: TimelineTrack) {
             )
         }
 
-        // مساحة المقاطع التفاعلية داخل المسار
         Row(
             modifier = Modifier
                 .weight(1f)
