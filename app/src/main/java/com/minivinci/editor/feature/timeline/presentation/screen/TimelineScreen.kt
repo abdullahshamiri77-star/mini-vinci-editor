@@ -56,8 +56,15 @@ fun TimelineScreen(viewModel: TimelineViewModel) {
                 onClick = {
                     val firstVideoTrack = project.tracks.firstOrNull { it.trackType == TrackType.VIDEO }
                     firstVideoTrack?.let {
-                        viewModel.addClip(it.trackId, "sample_media_${System.currentTimeMillis()}.mp4", 5000000L) // 5 ثوانٍ
-                    }
+                        viewModel.addClip(
+    trackId = it.trackId,
+    clipId = "clip_${System.currentTimeMillis()}",
+    mediaPath = "sample_media_${System.currentTimeMillis()}.mp4",
+    startTimeUs = 0L,
+    durationUs = 5_000_000L, // 5 ثوانٍ
+    outPointUs = 5_000_000L
+)
+
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE5A93B)) // لون ذهبي تيمي
             ) {
