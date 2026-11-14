@@ -1,13 +1,15 @@
 package com.minivinci.editor.navigation
 
-import androidx.compose.runtime.Composable
-import androidx.navigation.NavHostController
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.minivinci.editor.feature.timeline.presentation.screen.TimelineScreen
@@ -60,7 +62,6 @@ fun VisionStudioNavHost(
                 viewModel = exportViewModel,
                 project = project,
                 onExportFinished = { finalPath ->
-                    // العودة للتايملاين أو التعامل مع انتهاء التصدير
                     navController.popBackStack()
                 }
             )
@@ -79,7 +80,7 @@ fun WorkspacePlaceholder(title: String) {
         Text(
             text = title,
             color = Color.White,
-            style = androidx.compose.material3.MaterialTheme.typography.titleLarge
+            style = MaterialTheme.typography.titleLarge
         )
     }
 }
