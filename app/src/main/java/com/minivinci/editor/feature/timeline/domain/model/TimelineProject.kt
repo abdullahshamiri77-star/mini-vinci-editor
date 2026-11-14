@@ -1,13 +1,11 @@
 package com.minivinci.editor.feature.timeline.domain.model
 
-/**
- * النموذج الموحد لمشروع التايملاين المتقدم
- */
 data class TimelineProject(
     val projectId: String,
     val projectName: String,
     val fps: Int = 30,
-    val tracks: List<TimelineTrack> = emptyList()
+    val frameRate: FrameRate = FrameRate.FPS_30, // الإضافة الاحترافية الجديدة
+    val tracks: List<TimelineTrack> = emptyList() // الاحتفاظ بالمسارات الحالية تماماً
 )
 
 data class TimelineTrack(
