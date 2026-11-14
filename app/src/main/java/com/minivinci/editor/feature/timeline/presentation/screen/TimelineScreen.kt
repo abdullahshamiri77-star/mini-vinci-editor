@@ -57,14 +57,14 @@ fun TimelineScreen(viewModel: TimelineViewModel) {
                     val firstVideoTrack = project.tracks.firstOrNull { it.trackType == TrackType.VIDEO }
                     firstVideoTrack?.let {
                         viewModel.addClip(
-    trackId = it.trackId,
-    clipId = "clip_${System.currentTimeMillis()}",
-    mediaPath = "sample_media_${System.currentTimeMillis()}.mp4",
-    startTimeUs = 0L,
-    durationUs = 5_000_000L, // 5 ثوانٍ
-    outPointUs = 5_000_000L
-)
-
+                            trackId = it.trackId,
+                            clipId = "clip_${System.currentTimeMillis()}",
+                            mediaPath = "sample_media_${System.currentTimeMillis()}.mp4",
+                            startTimeUs = 0L,
+                            durationUs = 5_000_000L, // 5 ثوانٍ
+                            outPointUs = 5_000_000L
+                        )
+                    }
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE5A93B)) // لون ذهبي تيمي
             ) {
@@ -88,10 +88,13 @@ fun TimelineScreen(viewModel: TimelineViewModel) {
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(project.tracks) { track ->
-                    TrackRowItem(track = track, onClipClick = { clip ->
-                        // تجربة التقسيم عند الضغط على المقطع منتصف مدته
-                        viewModel.splitClip(track.trackId, clip.clipId, clip.startTimeUs + (clip.durationUs / 2))
-                    })
+                    TrackRowItem(
+                        track = track, 
+                        onClipClick = { clip ->
+                            // تجربة التقسيم عند الضغط على المقطع منتصف مدته
+                            viewModel.splitClip(track.trackId, clip.clipId, clip.startTimeUs + (clip.durationUs / 2))
+                        }
+                    )
                 }
             }
         }
