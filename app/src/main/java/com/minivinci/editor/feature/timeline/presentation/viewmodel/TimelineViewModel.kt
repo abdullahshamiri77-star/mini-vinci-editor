@@ -12,9 +12,10 @@ import kotlinx.coroutines.flow.update
 
 class TimelineViewModel : ViewModel() {
 
-    // حالة المشروع تبدأ بمسارات حقيقية جاهزة (Video 1 و Audio 1)
+    // حالة المشروع مع تمرير projectId الإجباري والمسارات الحقيقية
     private val _projectState = MutableStateFlow(
         TimelineProject(
+            projectId = "project_1", // تم إضافة المعرّف الإجباري هنا
             projectName = "VisionStudio Project",
             fps = 30,
             tracks = listOf(
@@ -22,7 +23,6 @@ class TimelineViewModel : ViewModel() {
                     trackId = "v1",
                     trackType = TrackType.VIDEO,
                     clips = listOf(
-                        // مقطع افتراضي تجريبي يظهر فوراً لبرهان التشغيل
                         TimelineClip(
                             clipId = "sample_clip_1",
                             mediaPath = "sample.mp4",
@@ -42,7 +42,6 @@ class TimelineViewModel : ViewModel() {
     )
     val projectState: StateFlow<TimelineProject> = _projectState.asStateFlow()
 
-    // إضافة مقطع حقيقي للمسار المحدد
     fun addClip(trackId: String, clipId: String, mediaPath: String, startTimeUs: Long, durationUs: Long, outPointUs: Long) {
         _projectState.update { currentProject ->
             val updatedTracks = currentProject.tracks.map { track ->
@@ -63,8 +62,7 @@ class TimelineViewModel : ViewModel() {
         }
     }
 
-    // قص المقطع (Blade)
     fun splitClip(trackId: String, clipId: String, splitTimeUs: Long) {
-        // منطق القص الفعلي سيتم تنفيذه وتحديث الواجهة فوراً
+        // منطق القص
     }
 }
