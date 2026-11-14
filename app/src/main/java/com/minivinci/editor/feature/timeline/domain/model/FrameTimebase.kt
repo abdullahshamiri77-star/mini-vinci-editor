@@ -1,8 +1,8 @@
 package com.minivinci.editor.feature.timeline.domain.model
 
 /**
- * مسؤول عن تحويل الإطارات إلى زمن دقيق بالميكروثانية والعكس
- * باستخدام حسابات صحيحة (Long) حصراً لتفادي أي أخطاء تراكمية.
+ * مسؤول عن التحويل الدقيق بين رقم الإطار (Frame Index) والزمن بالميكروثانية (Microseconds)
+ * باستخدام حسابات صحيحة حصراً (Long) لتفادي أي أخطاء تراكمية في المونتاج.
  */
 class FrameTimebase(val frameRate: FrameRate) {
 
