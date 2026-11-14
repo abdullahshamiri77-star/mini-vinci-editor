@@ -4,25 +4,26 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.media3.ui.PlayerView
 import com.minivinci.editor.feature.timeline.presentation.viewmodel.TimelineViewModel
 
 @Composable
 fun TimelineScreen(viewModel: TimelineViewModel) {
     val projectState by viewModel.projectState.collectAsState()
+    val context = LocalContext.current
 
-    // منتقي الملفات الحقيقي لاستيراد الفيديوهات من ذاكرة الهاتف
     val videoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
@@ -37,7 +38,7 @@ fun TimelineScreen(viewModel: TimelineViewModel) {
             .background(Color(0xFF121212))
             .padding(12.dp)
     ) {
-        // --- الشريط العلوي لبرنامج VisionStudio ---
+        // --- الشريط العلوي الاحترافي ---
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -51,7 +52,7 @@ fun TimelineScreen(viewModel: TimelineViewModel) {
                     style = MaterialTheme.typography.titleLarge
                 )
                 Text(
-                    text = "FPS: ${projectState.fps} | DaVinci Engine Active",
+                    text = "FPS: ${projectState.fps} | ExoPlayer Engine Live",
                     color = Color.Gray,
                     fontSize = 11.sp
                 )
@@ -67,7 +68,7 @@ fun TimelineScreen(viewModel: TimelineViewModel) {
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        // --- شاشة المعاينة الاحترافية (Preview Window) ---
+        // --- شاشة المعاينة الحقيقية المزودة بـ ExoPlayer PlayerView ---
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -75,16 +76,20 @@ fun TimelineScreen(viewModel: TimelineViewModel) {
                 .background(Color.Black),
             contentAlignment = Alignment.Center
         ) {
-            Text(
-                text = "شاشة المعاينة التفاعلية (جاهزة لربط ExoPlayer)",
-                color = Color.LightGray,
-                fontSize = 13.sp
+            AndroidView(
+                factory = { ctx ->
+                    PlayerView(ctx).apply {
+                        player = viewModel.exoPlayer
+                        useController = true // إظهار أزرار التحكم بالتشغيل والإيقاف المؤقت
+                    }
+                },
+                modifier = Modifier.fillMaxSize()
             )
         }
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // --- مسارات التايملاين الحقيقية (V4 إلى V1 و A1) ---
+        // --- مسارات التايملاين المتعددة ---
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
@@ -107,7 +112,7 @@ fun TimelineScreen(viewModel: TimelineViewModel) {
                             fontSize = 12.sp
                         )
                         Text(
-                            text = if (track.clips.isEmpty()) "المسار فارغ (اضغط استيراد لإضافة مقطع)" else "عدد المقاطع: ${track.clips.size}",
+                            text = if (track.clips.isEmpty()) "المسار فارغ (اضغط استيراد لإضافة مقطع)" else "مقطع مسجل: ${track.clips.first().clipId}",
                             color = Color.LightGray,
                             fontSize = 11.sp
                         )
