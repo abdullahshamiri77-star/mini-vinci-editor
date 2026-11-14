@@ -2,12 +2,11 @@ package com.minivinci.editor.feature.timeline.domain.operation
 
 import com.minivinci.editor.feature.timeline.domain.model.TimelineClip
 import com.minivinci.editor.feature.timeline.domain.model.TimelineProject
-import com.minivinci.editor.feature.timeline.domain.model.TimelineTrack
 
 class AddClipOperation {
-    fun execute(project: TimelineProject, targetTrackId: String, clip: TimelineClip): TimelineProject {
+    operator fun invoke(project: TimelineProject, trackId: String, clip: TimelineClip): TimelineProject {
         val updatedTracks = project.tracks.map { track ->
-            if (track.id == targetTrackId) {
+            if (track.trackId == trackId) {
                 track.copy(clips = track.clips + clip)
             } else {
                 track
