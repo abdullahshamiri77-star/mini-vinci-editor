@@ -8,10 +8,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.compose.rememberNavController
-import com.minivinci.editor.feature.export.presentation.viewmodel.ExportViewModel
+import com.minivinci.editor.feature.timeline.presentation.screen.TimelineScreen
 import com.minivinci.editor.feature.timeline.presentation.viewmodel.TimelineViewModel
-import com.minivinci.editor.navigation.VisionStudioNavHost
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -22,18 +20,9 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    val navController = rememberNavController()
-                    
-                    // حقن الـ ViewModels الخاصة بالمحركات
+                    // ربط الـ ViewModel وشاشة التايملاين الاحترافية الجديدة مباشرة
                     val timelineViewModel: TimelineViewModel = viewModel()
-                    val exportViewModel: ExportViewModel = viewModel()
-
-                    // استدعاء مضيف التنقل المركزي لـ VisionStudio
-                    VisionStudioNavHost(
-                        navController = navController,
-                        timelineViewModel = timelineViewModel,
-                        exportViewModel = exportViewModel
-                    )
+                    TimelineScreen(viewModel = timelineViewModel)
                 }
             }
         }
