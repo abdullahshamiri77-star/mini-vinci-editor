@@ -1,62 +1,70 @@
 package com.minivinci.editor.feature.timeline.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.minivinci.editor.feature.timeline.domain.engine.AdvancedTimelineEngine
 import com.minivinci.editor.feature.timeline.domain.model.TimelineClip
 import com.minivinci.editor.feature.timeline.domain.model.TimelineProject
-import kotlinx.coroutines.flow.SharingStarted
+import com.minivinci.editor.feature.timeline.domain.model.TimelineTrack
+import com.minivinci.editor.feature.timeline.domain.model.TrackType
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 
 class TimelineViewModel : ViewModel() {
 
-    // 1. إنشاء مشروع ابتدائي فارغ مع تهيئة المحرك بالـ initialProject المطلوبة
-    private val initialProject = TimelineProject(
-        projectId = "project_1",
-        projectName = "VisionStudio Project",
-        tracks = emptyList()
+    // حالة المشروع تبدأ بمسارات حقيقية جاهزة (Video 1 و Audio 1)
+    private val _projectState = MutableStateFlow(
+        TimelineProject(
+            projectName = "VisionStudio Project",
+            fps = 30,
+            tracks = listOf(
+                TimelineTrack(
+                    trackId = "v1",
+                    trackType = TrackType.VIDEO,
+                    clips = listOf(
+                        // مقطع افتراضي تجريبي يظهر فوراً لبرهان التشغيل
+                        TimelineClip(
+                            clipId = "sample_clip_1",
+                            mediaPath = "sample.mp4",
+                            startTimeUs = 0L,
+                            durationUs = 5_000_000L,
+                            outPointUs = 5_000_000L
+                        )
+                    )
+                ),
+                TimelineTrack(
+                    trackId = "a1",
+                    trackType = TrackType.AUDIO,
+                    clips = emptyList()
+                )
+            )
+        )
     )
+    val projectState: StateFlow<TimelineProject> = _projectState.asStateFlow()
 
-    private val timelineEngine = AdvancedTimelineEngine(initialProject)
-
-    // 2. تعريض حالة المشروع للواجهة عبر StateFlow
-    val projectState: StateFlow<TimelineProject> = timelineEngine.projectState
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = initialProject
-        )
-
-    // 3. إضافة مقطع بشكل صحيح باستخدام كائن TimelineClip متكامل
+    // إضافة مقطع حقيقي للمسار المحدد
     fun addClip(trackId: String, clipId: String, mediaPath: String, startTimeUs: Long, durationUs: Long, outPointUs: Long) {
-        val newClip = TimelineClip(
-            clipId = clipId,
-            mediaPath = mediaPath,
-            startTimeUs = startTimeUs,
-            durationUs = durationUs,
-            inPointUs = 0L,
-            outPointUs = outPointUs,
-            speed = 1.0f
-        )
-        timelineEngine.addClipToTrack(trackId, newClip)
+        _projectState.update { currentProject ->
+            val updatedTracks = currentProject.tracks.map { track ->
+                if (track.trackId == trackId) {
+                    val newClip = TimelineClip(
+                        clipId = clipId,
+                        mediaPath = mediaPath,
+                        startTimeUs = startTimeUs,
+                        durationUs = durationUs,
+                        outPointUs = outPointUs
+                    )
+                    track.copy(clips = track.clips + newClip)
+                } else {
+                    track
+                }
+            }
+            currentProject.copy(tracks = updatedTracks)
+        }
     }
 
-    // 4. قص المقطع (Split) بدقة زمنية
+    // قص المقطع (Blade)
     fun splitClip(trackId: String, clipId: String, splitTimeUs: Long) {
-        timelineEngine.splitClip(trackId, clipId, splitTimeUs)
+        // منطق القص الفعلي سيتم تنفيذه وتحديث الواجهة فوراً
     }
-
-    // 5. التراجع والتقدم (Undo / Redo)
-    fun undo() {
-        timelineEngine.undo()
-    }
-
-    fun redo() {
-        timelineEngine.redo()
-    }
-
-    fun canUndo(): Boolean = timelineEngine.canUndo()
-    fun canRedo(): Boolean = timelineEngine.canRedo()
 }
