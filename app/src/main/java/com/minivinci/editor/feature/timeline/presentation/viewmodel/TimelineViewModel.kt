@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.update
 
 class TimelineViewModel : ViewModel() {
 
+    // حالة المشروع المعمارية المتوافقة مع بنية دافنشي (المسارات من V4 إلى V1 و A1)
     private val _projectState = MutableStateFlow(
         TimelineProject(
             projectId = "vision_studio_proj_01",
@@ -28,13 +29,15 @@ class TimelineViewModel : ViewModel() {
     )
     val projectState: StateFlow<TimelineProject> = _projectState.asStateFlow()
 
+    // مؤشر التشغيل Playhead بالليثانية
     private val _currentPositionUs = MutableStateFlow(0L)
     val currentPositionUs: StateFlow<Long> = _currentPositionUs.asStateFlow()
 
+    // معرف المقطع المحدد حالياً
     private val _selectedClipId = MutableStateFlow<String?>(null)
     val selectedClipId: StateFlow<String?> = _selectedClipId.asStateFlow()
 
-    // الدالة موحدة باسم addRealClip لضمان توافقها التام مع الشاشة
+    // إضافة مقطع حقيقي تم استيراده من ذاكرة الهاتف
     fun addRealClip(mediaUri: String, trackId: String = "v1") {
         _projectState.update { currentProject ->
             val updatedTracks = currentProject.tracks.map { track ->
@@ -55,15 +58,18 @@ class TimelineViewModel : ViewModel() {
         }
     }
 
+    // تحديث موضع مؤشر التشغيل
     fun seekTo(positionUs: Long) {
         _currentPositionUs.value = positionUs
     }
 
+    // تحديد مقطع معين
     fun selectClip(clipId: String) {
         _selectedClipId.value = clipId
     }
 
+    // قص المقطع (Blade) عند موضع المؤشر
     fun splitClipAtPlayhead(trackId: String, clipId: String) {
-        // منطق القص
+        // منطق القص التفاعلي
     }
 }
