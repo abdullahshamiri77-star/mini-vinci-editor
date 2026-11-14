@@ -27,11 +27,11 @@ fun TimelineScreen(viewModel: TimelineViewModel) {
     val projectState by viewModel.projectState.collectAsState()
 
     // منتقي الملفات الفعلي لاستيراد فيديوهات الهاتف (.mp4)
-    const val videoPickerLauncher = rememberLauncherForActivityResult(
+    val videoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         uri?.let { selectedUri ->
-            // تمرير مسار الفيديو الحقيقي للمحرك فوراً
+            // تمرير مسار الفيديو الحقيقي للمحرك فوراً باستخدام addRealClip الصحيحة
             viewModel.addRealClip(selectedUri.toString())
         }
     }
