@@ -20,7 +20,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    // ربط الـ ViewModel وشاشة التايملاين الاحترافية الجديدة مباشرة
+                    // ربط مباشر ونظيف مع الـ TimelineViewModel و TimelineScreen الاحترافية
                     val timelineViewModel: TimelineViewModel = viewModel()
                     TimelineScreen(viewModel = timelineViewModel)
                 }
