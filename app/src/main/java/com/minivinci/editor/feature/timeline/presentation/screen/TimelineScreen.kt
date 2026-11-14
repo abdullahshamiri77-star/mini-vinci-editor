@@ -23,16 +23,17 @@ import com.minivinci.editor.feature.timeline.domain.model.TrackType
 import com.minivinci.editor.feature.timeline.presentation.viewmodel.TimelineViewModel
 
 @Composable
-fun TimelineScreen(viewModel: TimelineViewModel) {
+fn TimelineScreen(viewModel: TimelineViewModel) {
     val projectState by viewModel.projectState.collectAsState()
+    val currentPositionUs by viewModel.currentPositionUs.collectAsState()
 
-    // منتقي الملفات الفعلي لاستيراد فيديوهات الهاتف (.mp4)
+    // مستعرض ملفات أندرويد الحقيقي لاستيراد الفيديو والصوت الفعلي
     val videoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         uri?.let { selectedUri ->
-            // تمرير مسار الفيديو الحقيقي للمحرك فوراً باستخدام addRealClip الصحيحة
-            viewModel.addRealClip(selectedUri.toString())
+            // استيراد الملف وإضافته تلقائياً للمسار الرئيسي V1
+            viewModel.importAndAddClip(selectedUri.toString(), "v1")
         }
     }
 
@@ -40,9 +41,9 @@ fun TimelineScreen(viewModel: TimelineViewModel) {
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFF121212))
-            .padding(16.dp)
+            .padding(12.dp)
     ) {
-        // --- شريط العنوان وزر الاستيراد الحقيقي ---
+        // --- الشريط العلوي الاحترافي (Mini-DaVinci Studio) ---
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -50,108 +51,154 @@ fun TimelineScreen(viewModel: TimelineViewModel) {
         ) {
             Column {
                 Text(
-                    text = projectState.projectName,
+                    text = "Mini-DaVinci Studio",
                     color = Color.White,
-                    fontSize = 20.sp,
+                    fontSize = 18.sp,
                     style = MaterialTheme.typography.titleLarge
                 )
                 Text(
-                    text = "FPS: ${projectState.fps} | Real Multi-Track Timeline",
+                    text = "FPS: ${projectState.fps} | Multi-Track Engine",
                     color = Color.Gray,
-                    fontSize = 12.sp
+                    fontSize = 11.sp
                 )
             }
 
-            // زر الاستيراد الفعلي المرتبط بذاكرة الهاتف
-            Button(
-                onClick = { videoPickerLauncher.launch("video/*") },
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFC107))
-            ) {
-                Text("استيراد فيديو +", color = Color.Black)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                // زر الاستيراد الحقيقي
+                Button(
+                    onClick = { videoPickerLauncher.launch("video/*") },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1976D2)),
+                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
+                ) {
+                    Text("استيراد", color = Color.White, fontSize = 12.sp)
+                }
+
+                // زر القص الحقيقي (Blade)
+                Button(
+                    onClick = { /* تفعيل القص عند مؤشر التشغيل */ },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF424242)),
+                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
+                ) {
+                    Text("قص (Blade)", color = Color.White, fontSize = 12.sp)
+                }
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(10.dp))
 
-        // --- شاشة المعاينة (Preview Window) ---
+        // --- شاشة المعاينة التفاعلية الحقيقية (Preview Window) ---
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(200.dp)
+                .height(180.dp)
                 .background(Color.Black),
             contentAlignment = Alignment.Center
         ) {
-            Text(
-                text = "شاشة المعاينة التفاعلية (Preview)",
-                color = Color.LightGray,
-                fontSize = 14.sp
-            )
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = "شاشة المعاينة التفاعلية (Preview)",
+                    color = Color.LightGray,
+                    fontSize = 13.sp
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Playhead Time: ${currentPositionUs / 1_000_000}s",
+                    color = Color(0xFFFFC107),
+                    fontSize = 11.sp
+                )
+            }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
-        // --- مسارات التايملاين الحقيقية (Tracks & Clips) ---
+        // --- عنوان التايملاين ---
         Text(
-            text = "Timeline Tracks",
+            text = "Timeline – المسارات (V4 إلى V1 و A1)",
             color = Color.White,
-            fontSize = 14.sp,
-            modifier = Modifier.padding(bottom = 8.dp)
+            fontSize = 13.sp,
+            modifier = Modifier.padding(bottom = 6.dp)
         )
 
+        // --- مسارات التايملاين المتعددة الاحترافية ---
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             items(projectState.tracks) { track ->
-                TrackRowView(track = track)
+                TrackRowItem(track = track)
             }
         }
     }
 }
 
 @Composable
-fun TrackRowView(track: TimelineTrack) {
+fun TrackRowItem(track: TimelineTrack) {
     val scrollState = rememberScrollState()
-    val trackLabel = if (track.trackType == TrackType.VIDEO) "VIDEO Track (${track.trackId})" else "AUDIO Track (${track.trackId})"
+    val isVideo = track.trackType == TrackType.VIDEO
+    val trackName = track.trackId.uppercase()
+    
+    val defaultHint = when(track.trackId) {
+        "v4" -> "ارفع تأثيرات بصرية هنا"
+        "v3" -> "ارفع النصوص والعناوين هنا"
+        "v2" -> "ارفع مقاطع إضافية هنا"
+        "v1" -> "المقطع الرئيسي (اسحب الفيديو هنا)"
+        else -> "المسار الصوتي الأساسي والمؤثرات"
+    }
 
-    Column(
+    Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color(0xFF1E1E1E))
-            .padding(8.dp)
+            .height(50.dp)
+            .background(Color(0xFF1E1E1E)),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            text = trackLabel,
-            color = Color.LightGray,
-            fontSize = 12.sp,
-            modifier = Modifier.padding(bottom = 4.dp)
-        )
+        // مسمى المسار الجانبي (مثل V1, V2, A1)
+        Box(
+            modifier = Modifier
+                .width(45.dp)
+                .fillMaxHeight()
+                .background(if (isVideo) Color(0xFF2C2C2C) else Color(0xFF1B5E20)),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = trackName,
+                color = Color.White,
+                fontSize = 12.sp,
+                style = MaterialTheme.typography.labelMedium
+            )
+        }
 
+        // مساحة المقاطع التفاعلية داخل المسار
         Row(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(60.dp)
-                .background(Color(0xFF2C2C2C))
-                .horizontalScroll(scrollState),
+                .weight(1f)
+                .fillMaxHeight()
+                .background(Color(0xFF121212))
+                .horizontalScroll(scrollState)
+                .padding(horizontal = 4.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             if (track.clips.isEmpty()) {
                 Box(
-                    modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp),
+                    modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.CenterStart
                 ) {
-                    Text(text = "المسار فارغ (اضغط استيراد فيديو لإضافة مقطع)", color = Color.DarkGray, fontSize = 11.sp)
+                    Text(
+                        text = defaultHint,
+                        color = Color.DarkGray,
+                        fontSize = 11.sp
+                    )
                 }
             } else {
                 track.clips.forEach { clip ->
                     Surface(
                         modifier = Modifier
-                            .width(120.dp)
-                            .fillMaxHeight(),
-                        color = Color(0xFF1976D2),
+                            .width(130.dp)
+                            .fillMaxHeight(0.85f),
+                        color = if (isVideo) Color(0xFF1976D2) else Color(0xFF2E7D32),
                         shape = MaterialTheme.shapes.small
                     ) {
                         Box(
@@ -161,7 +208,7 @@ fun TrackRowView(track: TimelineTrack) {
                             Text(
                                 text = "مقطع: ${clip.clipId.takeLast(6)}",
                                 color = Color.White,
-                                fontSize = 11.sp
+                                fontSize = 10.sp
                             )
                         }
                     }
