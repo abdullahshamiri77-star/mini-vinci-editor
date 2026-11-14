@@ -12,7 +12,6 @@ import kotlinx.coroutines.flow.update
 
 class TimelineViewModel : ViewModel() {
 
-    // حالة المشروع الحقيقية مع مسارات دافنشي الأساسية (V1 إلى V4 و A1)
     private val _projectState = MutableStateFlow(
         TimelineProject(
             projectId = "vision_studio_proj_01",
@@ -29,16 +28,14 @@ class TimelineViewModel : ViewModel() {
     )
     val projectState: StateFlow<TimelineProject> = _projectState.asStateFlow()
 
-    // مؤشر التشغيل الحالي Playhead (بالليثانية)
     private val _currentPositionUs = MutableStateFlow(0L)
     val currentPositionUs: StateFlow<Long> = _currentPositionUs.asStateFlow()
 
-    // المقطع المحدد حالياً للتعديل أو القص
     private val _selectedClipId = MutableStateFlow<String?>(null)
     val selectedClipId: StateFlow<String?> = _selectedClipId.asStateFlow()
 
-    // 1. استيراد وإضافة فيديو حقيقي إلى مسار محدد (افتراضياً V1)
-    fun importAndAddClip(mediaUri: String, trackId: String = "v1") {
+    // الدالة موحدة باسم addRealClip لضمان توافقها التام مع الشاشة
+    fun addRealClip(mediaUri: String, trackId: String = "v1") {
         _projectState.update { currentProject ->
             val updatedTracks = currentProject.tracks.map { track ->
                 if (track.trackId == trackId) {
@@ -46,7 +43,7 @@ class TimelineViewModel : ViewModel() {
                         clipId = "clip_${System.currentTimeMillis()}",
                         mediaPath = mediaUri,
                         startTimeUs = track.clips.sumOf { it.durationUs },
-                        durationUs = 5_000_000L, // مدة مبدئية 5 ثوانٍ قابلة للتمدد الفعلي
+                        durationUs = 5_000_000L,
                         outPointUs = 5_000_000L
                     )
                     track.copy(clips = track.clips + newClip)
@@ -58,22 +55,15 @@ class TimelineViewModel : ViewModel() {
         }
     }
 
-    // 2. تحديث موضع مؤشر التشغيل Playhead
     fun seekTo(positionUs: Long) {
         _currentPositionUs.value = positionUs
     }
 
-    // 3. تحديد مقطع معين عند الضغط عليه في التايملاين
     fun selectClip(clipId: String) {
         _selectedClipId.value = clipId
     }
 
-    // 4. دالة القص الحقيقي (Blade Tool) عند موضع المؤشر
     fun splitClipAtPlayhead(trackId: String, clipId: String) {
-        val splitTime = _currentPositionUs.value
-        _projectState.update { currentProject ->
-            // سيتم تنفيذ خوارزمية تقسيم المقطع بدقة إطارات الـ FPS دون فقدان البيانات
-            currentProject
-        }
+        // منطق القص
     }
 }
