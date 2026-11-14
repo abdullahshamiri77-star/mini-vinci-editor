@@ -2,7 +2,6 @@ package com.minivinci.editor.feature.timeline.domain.model
 
 /**
  * يمثل معدل الإطارات (Frame Rate) بصيغة كسرية (Rational) لتجنب أخطاء التقريب
- * مثل 29.97 (30000/1001) و 24 (24/1).
  */
 data class FrameRate(
     val numerator: Int,
