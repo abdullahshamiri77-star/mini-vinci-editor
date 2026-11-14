@@ -54,7 +54,7 @@ class AdvancedTimelineEngine {
 
         val updatedTracks = currentProject.tracks.map { track ->
             if (track.trackId == trackId) {
-                val newClips = mutableListof<TimelineClip>()
+                val newClips = mutableListOf<TimelineClip>()
                 for (clip in track.clips) {
                     if (clip.clipId == clipId && splitTimeUs > clip.startTimeUs && splitTimeUs < (clip.startTimeUs + clip.durationUs)) {
                         val firstDuration = splitTimeUs - clip.startTimeUs
