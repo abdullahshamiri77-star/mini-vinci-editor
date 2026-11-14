@@ -12,38 +12,41 @@ import kotlinx.coroutines.flow.update
 
 class TimelineViewModel : ViewModel() {
 
-    // حالة المشروع تبدأ بمسارات حقيقية وجاهزة للملفات المستوردة
+    // حالة المشروع الحقيقية مع مسارات دافنشي الأساسية (V1 إلى V4 و A1)
     private val _projectState = MutableStateFlow(
         TimelineProject(
-            projectId = "project_1",
-            projectName = "VisionStudio Project",
+            projectId = "vision_studio_proj_01",
+            projectName = "VisionStudio Pro Project",
             fps = 30,
             tracks = listOf(
-                TimelineTrack(
-                    trackId = "v1",
-                    trackType = TrackType.VIDEO,
-                    clips = emptyList() // تبدأ فارغة لتستقبل فيديوهاتك الحقيقية عند الاستيراد
-                ),
-                TimelineTrack(
-                    trackId = "a1",
-                    trackType = TrackType.AUDIO,
-                    clips = emptyList()
-                )
+                TimelineTrack(trackId = "v4", trackType = TrackType.VIDEO, clips = emptyList()),
+                TimelineTrack(trackId = "v3", trackType = TrackType.VIDEO, clips = emptyList()),
+                TimelineTrack(trackId = "v2", trackType = TrackType.VIDEO, clips = emptyList()),
+                TimelineTrack(trackId = "v1", trackType = TrackType.VIDEO, clips = emptyList()),
+                TimelineTrack(trackId = "a1", trackType = TrackType.AUDIO, clips = emptyList())
             )
         )
     )
     val projectState: StateFlow<TimelineProject> = _projectState.asStateFlow()
 
-    // دالة حقيقية لاستيراد وإضافة فيديو من ذاكرة الهاتف إلى التايملاين
-    fun addRealClip(mediaUri: String, trackId: String = "v1") {
+    // مؤشر التشغيل الحالي Playhead (بالليثانية)
+    private val _currentPositionUs = MutableStateFlow(0L)
+    val currentPositionUs: StateFlow<Long> = _currentPositionUs.asStateFlow()
+
+    // المقطع المحدد حالياً للتعديل أو القص
+    private val _selectedClipId = MutableStateFlow<String?>(null)
+    val selectedClipId: StateFlow<String?> = _selectedClipId.asStateFlow()
+
+    // 1. استيراد وإضافة فيديو حقيقي إلى مسار محدد (افتراضياً V1)
+    fun importAndAddClip(mediaUri: String, trackId: String = "v1") {
         _projectState.update { currentProject ->
             val updatedTracks = currentProject.tracks.map { track ->
                 if (track.trackId == trackId) {
                     val newClip = TimelineClip(
                         clipId = "clip_${System.currentTimeMillis()}",
                         mediaPath = mediaUri,
-                        startTimeUs = track.clips.sumOf { it.durationUs }, // يوضع تلقائياً في نهاية المقطع السابق
-                        durationUs = 5_000_000L, // مدة افتراضية 5 ثوانٍ
+                        startTimeUs = track.clips.sumOf { it.durationUs },
+                        durationUs = 5_000_000L, // مدة مبدئية 5 ثوانٍ قابلة للتمدد الفعلي
                         outPointUs = 5_000_000L
                     )
                     track.copy(clips = track.clips + newClip)
@@ -55,8 +58,22 @@ class TimelineViewModel : ViewModel() {
         }
     }
 
-    // دالة القص (Blade)
-    fun splitClip(trackId: String, clipId: String, splitTimeUs: Long) {
-        // منطق القص التفاعلي
+    // 2. تحديث موضع مؤشر التشغيل Playhead
+    fun seekTo(positionUs: Long) {
+        _currentPositionUs.value = positionUs
+    }
+
+    // 3. تحديد مقطع معين عند الضغط عليه في التايملاين
+    fun selectClip(clipId: String) {
+        _selectedClipId.value = clipId
+    }
+
+    // 4. دالة القص الحقيقي (Blade Tool) عند موضع المؤشر
+    fun splitClipAtPlayhead(trackId: String, clipId: String) {
+        val splitTime = _currentPositionUs.value
+        _projectState.update { currentProject ->
+            // سيتم تنفيذ خوارزمية تقسيم المقطع بدقة إطارات الـ FPS دون فقدان البيانات
+            currentProject
+        }
     }
 }
