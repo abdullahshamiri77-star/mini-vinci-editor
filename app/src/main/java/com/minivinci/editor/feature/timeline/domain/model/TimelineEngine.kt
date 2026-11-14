@@ -17,9 +17,9 @@ class TimelineEngine(
     // حالة المشروع الحالية في التايملاين
     private val _projectState = MutableStateFlow(
         TimelineProject(
-            id = "proj_davinci_1",
-            name = "VisionStudio Master Project",
-            fps = 30
+            projectId = "1",
+            projectName = "Default Project",
+            tracks = emptyList()
         )
     )
     val projectState: StateFlow<TimelineProject> = _projectState.asStateFlow()
