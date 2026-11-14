@@ -16,17 +16,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.minivinci.editor.feature.timeline.domain.model.TimelineProject
-import com.minivinci.editor.feature.timeline.domain.model.TimelineTrack
-import com.minivinci.editor.feature.timeline.domain.model.TimelineClip
-import com.minivinci.editor.feature.timeline.domain.model.TrackType
 import com.minivinci.editor.feature.timeline.presentation.viewmodel.TimelineViewModel
 
 @Composable
 fun TimelineScreen(viewModel: TimelineViewModel) {
     val projectState by viewModel.projectState.collectAsState()
-    val currentPositionUs by viewModel.currentPositionUs.collectAsState()
 
+    // منتقي الملفات الحقيقي لاستيراد الفيديوهات من ذاكرة الهاتف
     val videoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
@@ -41,6 +37,7 @@ fun TimelineScreen(viewModel: TimelineViewModel) {
             .background(Color(0xFF121212))
             .padding(12.dp)
     ) {
+        // --- الشريط العلوي لبرنامج VisionStudio ---
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -48,39 +45,29 @@ fun TimelineScreen(viewModel: TimelineViewModel) {
         ) {
             Column {
                 Text(
-                    text = "Mini-DaVinci Studio",
+                    text = projectState.projectName,
                     color = Color.White,
                     fontSize = 18.sp,
                     style = MaterialTheme.typography.titleLarge
                 )
                 Text(
-                    text = "FPS: ${projectState.fps} | Multi-Track Engine",
+                    text = "FPS: ${projectState.fps} | DaVinci Engine Active",
                     color = Color.Gray,
                     fontSize = 11.sp
                 )
             }
 
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Button(
-                    onClick = { videoPickerLauncher.launch("video/*") },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1976D2)),
-                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
-                ) {
-                    Text("استيراد", color = Color.White, fontSize = 12.sp)
-                }
-
-                Button(
-                    onClick = { },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF424242)),
-                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
-                ) {
-                    Text("قص (Blade)", color = Color.White, fontSize = 12.sp)
-                }
+            Button(
+                onClick = { videoPickerLauncher.launch("video/*") },
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1976D2))
+            ) {
+                Text("استيراد فيديو +", color = Color.White, fontSize = 12.sp)
             }
         }
 
         Spacer(modifier = Modifier.height(10.dp))
 
+        // --- شاشة المعاينة الاحترافية (Preview Window) ---
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -88,30 +75,16 @@ fun TimelineScreen(viewModel: TimelineViewModel) {
                 .background(Color.Black),
             contentAlignment = Alignment.Center
         ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(
-                    text = "شاشة المعاينة التفاعلية (Preview)",
-                    color = Color.LightGray,
-                    fontSize = 13.sp
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "Playhead Time: ${currentPositionUs / 1_000_000}s",
-                    color = Color(0xFFFFC107),
-                    fontSize = 11.sp
-                )
-            }
+            Text(
+                text = "شاشة المعاينة التفاعلية (جاهزة لربط ExoPlayer)",
+                color = Color.LightGray,
+                fontSize = 13.sp
+            )
         }
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        Text(
-            text = "Timeline – المسارات (V4 إلى V1 و A1)",
-            color = Color.White,
-            fontSize = 13.sp,
-            modifier = Modifier.padding(bottom = 6.dp)
-        )
-
+        // --- مسارات التايملاين الحقيقية (V4 إلى V1 و A1) ---
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
@@ -119,88 +92,25 @@ fun TimelineScreen(viewModel: TimelineViewModel) {
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             items(projectState.tracks) { track ->
-                TrackRowItem(track = track)
-            }
-        }
-    }
-}
-
-@Composable
-fun TrackRowItem(track: TimelineTrack) {
-    val scrollState = rememberScrollState()
-    val isVideo = track.trackType == TrackType.VIDEO
-    val trackName = track.trackId.uppercase()
-    
-    val defaultHint = when(track.trackId) {
-        "v4" -> "ارفع تأثيرات بصرية هنا"
-        "v3" -> "ارفع النصوص والعناوين هنا"
-        "v2" -> "ارفع مقاطع إضافية هنا"
-        "v1" -> "المقطع الرئيسي (اسحب الفيديو هنا)"
-        else -> "المسار الصوتي الأساسي والمؤثرات"
-    }
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(50.dp)
-            .background(Color(0xFF1E1E1E)),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Box(
-            modifier = Modifier
-                .width(45.dp)
-                .fillMaxHeight()
-                .background(if (isVideo) Color(0xFF2C2C2C) else Color(0xFF1B5E20)),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = trackName,
-                color = Color.White,
-                fontSize = 12.sp,
-                style = MaterialTheme.typography.labelMedium
-            )
-        }
-
-        Row(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxHeight()
-                .background(Color(0xFF121212))
-                .horizontalScroll(scrollState)
-                .padding(horizontal = 4.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            if (track.clips.isEmpty()) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.CenterStart
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E)),
+                    modifier = Modifier.fillMaxWidth().height(50.dp)
                 ) {
-                    Text(
-                        text = defaultHint,
-                        color = Color.DarkGray,
-                        fontSize = 11.sp
-                    )
-                }
-            } else {
-                track.clips.forEach { clip ->
-                    Surface(
-                        modifier = Modifier
-                            .width(130.dp)
-                            .fillMaxHeight(0.85f),
-                        color = if (isVideo) Color(0xFF1976D2) else Color(0xFF2E7D32),
-                        shape = MaterialTheme.shapes.small
+                    Row(
+                        modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Box(
-                            modifier = Modifier.padding(4.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "مقطع: ${clip.clipId.takeLast(6)}",
-                                color = Color.White,
-                                fontSize = 10.sp
-                            )
-                        }
+                        Text(
+                            text = track.trackId.uppercase(),
+                            color = Color.Yellow,
+                            modifier = Modifier.width(40.dp),
+                            fontSize = 12.sp
+                        )
+                        Text(
+                            text = if (track.clips.isEmpty()) "المسار فارغ (اضغط استيراد لإضافة مقطع)" else "عدد المقاطع: ${track.clips.size}",
+                            color = Color.LightGray,
+                            fontSize = 11.sp
+                        )
                     }
                 }
             }
