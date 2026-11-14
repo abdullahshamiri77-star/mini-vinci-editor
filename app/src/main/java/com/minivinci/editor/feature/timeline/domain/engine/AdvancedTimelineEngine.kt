@@ -1,97 +1,88 @@
 package com.minivinci.editor.feature.timeline.domain.engine
 
-import com.minivinci.editor.feature.timeline.domain.model.AdvancedTimelineProject
 import com.minivinci.editor.feature.timeline.domain.model.TimelineClip
+import com.minivinci.editor.feature.timeline.domain.model.TimelineProject
 import com.minivinci.editor.feature.timeline.domain.model.TimelineTrack
+import com.minivinci.editor.feature.timeline.domain.model.TrackType
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import java.util.UUID
+import kotlinx.coroutines.flow.update
 
 class AdvancedTimelineEngine {
 
     private val _projectState = MutableStateFlow(
-        AdvancedTimelineProject(
-            projectId = UUID.randomUUID().toString(),
+        TimelineProject(
+            projectId = "project_1",
             projectName = "VisionStudio Cinematic Project",
+            fps = 30,
             tracks = listOf(
-                TimelineTrack(trackId = "track_v1", trackType = com.minivinci.editor.feature.timeline.domain.model.TrackType.VIDEO, clips = emptyList()),
-                TimelineTrack(trackId = "track_a1", trackType = com.minivinci.editor.feature.timeline.domain.model.TrackType.AUDIO, clips = emptyList())
+                TimelineTrack(trackId = "track_1", trackType = TrackType.VIDEO),
+                TimelineTrack(trackId = "track_2", trackType = TrackType.AUDIO)
             )
         )
     )
-    val projectState: StateFlow<AdvancedTimelineProject> = _projectState.asStateFlow()
+    val projectState: StateFlow<TimelineProject> = _projectState.asStateFlow()
 
     /**
      * إضافة مقطع جديد إلى مسار محدد
      */
     fun addClipToTrack(trackId: String, mediaPath: String, durationUs: Long) {
-        val currentProject = _projectState.value
-        val newClip = TimelineClip(
-            clipId = UUID.randomUUID().toString(),
-            mediaPath = mediaPath,
-            startTimeUs = calculateNextStartTime(currentProject, trackId),
-            durationUs = durationUs,
-            outPointUs = durationUs
-        )
-
-        val updatedTracks = currentProject.tracks.map { track ->
-            if (track.trackId == trackId) {
-                track.copy(clips = track.clips + newClip)
-            } else {
-                track
+        _projectState.update { currentProject ->
+            val updatedTracks = currentProject.tracks.map { track ->
+                if (track.trackId == trackId) {
+                    val newClips = mutableListOf<TimelineClip>()
+                    newClips.addAll(track.clips)
+                    
+                    val newClip = TimelineClip(
+                        clipId = "clip_${System.currentTimeMillis()}",
+                        mediaPath = mediaPath,
+                        startTimeUs = if (newClips.isEmpty()) 0L else newClips.maxOf { it.startTimeUs + it.durationUs },
+                        durationUs = durationUs,
+                        outPointUs = durationUs
+                    )
+                    newClips.add(newClip)
+                    track.copy(clips = newClips)
+                } else {
+                    track
+                }
             }
+            currentProject.copy(tracks = updatedTracks)
         }
-
-        _projectState.value = currentProject.copy(tracks = updatedTracks)
     }
 
     /**
-     * تقسيم مقطع معين عند زمن محدد (Split / Razor Tool)
+     * تقسيم مقطع عند نقطة زمنية محددة (Razor / Split)
      */
     fun splitClip(trackId: String, clipId: String, splitTimeUs: Long) {
-        val currentProject = _projectState.value
+        _projectState.update { currentProject ->
+            val updatedTracks = currentProject.tracks.map { track ->
+                if (track.trackId == trackId) {
+                    val newClips = mutableListOf<TimelineClip>()
+                    track.clips.forEach { clip ->
+                        if (clip.clipId == clipId && splitTimeUs > clip.startTimeUs && splitTimeUs < (clip.startTimeUs + clip.durationUs)) {
+                            val firstPartDuration = splitTimeUs - clip.startTimeUs
+                            val secondPartDuration = clip.durationUs - firstPartDuration
 
-        val updatedTracks = currentProject.tracks.map { track ->
-            if (track.trackId == trackId) {
-                val newClips = mutableListOf<TimelineClip>()
-                for (clip in track.clips) {
-                    if (clip.clipId == clipId && splitTimeUs > clip.startTimeUs && splitTimeUs < (clip.startTimeUs + clip.durationUs)) {
-                        val firstDuration = splitTimeUs - clip.startTimeUs
-                        val secondDuration = clip.durationUs - firstDuration
-
-                        // المقطع الأول بعد القص
-                        val clipPart1 = clip.copy(
-                            durationUs = firstDuration,
-                            outPointUs = clip.inPointUs + firstDuration
-                        )
-                        // المقطع الثاني بعد القص
-                        val clipPart2 = clip.copy(
-                            clipId = UUID.randomUUID().toString(),
-                            startTimeUs = splitTimeUs,
-                            inPointUs = clip.inPointUs + firstDuration,
-                            durationUs = secondDuration
-                        )
-                        newClips.add(clipPart1)
-                        newClips.add(clipPart2)
-                    } else {
-                        newClips.add(clip)
+                            val clip1 = clip.copy(durationUs = firstPartDuration, outPointUs = firstPartDuration)
+                            val clip2 = clip.copy(
+                                clipId = "clip_${System.currentTimeMillis()}",
+                                startTimeUs = splitTimeUs,
+                                durationUs = secondPartDuration,
+                                outPointUs = secondPartDuration
+                            )
+                            newClips.add(clip1)
+                            newClips.add(clip2)
+                        } else {
+                            newClips.add(clip)
+                        }
                     }
+                    track.copy(clips = newClips)
+                } else {
+                    track
                 }
-                track.copy(clips = newClips)
-            } else {
-                track
             }
+            currentProject.copy(tracks = updatedTracks)
         }
-
-        _projectState.value = currentProject.copy(tracks = updatedTracks)
-    }
-
-    /**
-     * حساب نقطة البداية للمقطع الجديد تلقائياً في نهاية المسار
-     */
-    private fun calculateNextStartTime(project: AdvancedTimelineProject, trackId: String): Long {
-        val track = project.tracks.find { it.trackId == trackId } ?: return 0L
-        return track.clips.maxOfOrNull { it.startTimeUs + it.durationUs } ?: 0L
     }
 }
