@@ -105,7 +105,8 @@ fun TrackRowItem(track: TimelineTrack, onClipClick: (TimelineClip) -> Unit) {
         // رأس المسار (اسم المسار ونوعه)
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = "${track.trackType.name} Track (${track.trackId})",
@@ -128,7 +129,7 @@ fun TrackRowItem(track: TimelineTrack, onClipClick: (TimelineClip) -> Unit) {
         ) {
             Row(
                 modifier = Modifier.fillMaxSize(),
-                horizontalArrangement = Arrangement.spacedSpacingCompatOrCustom() // استخدام التباعد البسيط
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 track.clips.forEach { clip ->
                     Box(
@@ -153,7 +154,3 @@ fun TrackRowItem(track: TimelineTrack, onClipClick: (TimelineClip) -> Unit) {
         }
     }
 }
-
-// دالة مساعدة سريعة للتباعد
-@Composable
-fun androidx.compose.foundation.layout.Arrangement.Horizontal.spacedSpacingCompatOrCustom() = Arrangement.spacedBy(4.dp)
