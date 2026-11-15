@@ -1,6 +1,12 @@
 package com.minivinci.editor.feature.timeline.presentation.viewmodel
 
+import android.application
+import android.content.Context
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import androidx.media3.common.MediaItem
+import androidx.media3.exoplayer.ExoPlayer
 import com.minivinci.editor.feature.timeline.domain.model.TimelineClip
 import com.minivinci.editor.feature.timeline.domain.model.TimelineProject
 import com.minivinci.editor.feature.timeline.domain.model.TimelineTrack
@@ -10,9 +16,11 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
-class TimelineViewModel : ViewModel() {
+class TimelineViewModel(application: android.app.Application) : AndroidViewModel(application) {
 
-    // حالة المشروع المعمارية المتوافقة مع بنية دافنشي (المسارات من V4 إلى V1 و A1)
+    // تعريف محرك ExoPlayer الحقيقي
+    val exoPlayer: ExoPlayer = ExoPlayer.Builder(application).build()
+
     private val _projectState = MutableStateFlow(
         TimelineProject(
             projectId = "vision_studio_proj_01",
@@ -29,15 +37,10 @@ class TimelineViewModel : ViewModel() {
     )
     val projectState: StateFlow<TimelineProject> = _projectState.asStateFlow()
 
-    // مؤشر التشغيل Playhead بالليثانية
     private val _currentPositionUs = MutableStateFlow(0L)
     val currentPositionUs: StateFlow<Long> = _currentPositionUs.asStateFlow()
 
-    // معرف المقطع المحدد حالياً
-    private val _selectedClipId = MutableStateFlow<String?>(null)
-    val selectedClipId: StateFlow<String?> = _selectedClipId.asStateFlow()
-
-    // إضافة مقطع حقيقي تم استيراده من ذاكرة الهاتف
+    // استيراد الفيديو وإضافته للتايملاين + تجهيزه مباشرة في مشغل ExoPlayer
     fun addRealClip(mediaUri: String, trackId: String = "v1") {
         _projectState.update { currentProject ->
             val updatedTracks = currentProject.tracks.map { track ->
@@ -56,20 +59,20 @@ class TimelineViewModel : ViewModel() {
             }
             currentProject.copy(tracks = updatedTracks)
         }
+
+        // حقن الملف في مشغل ExoPlayer ليعمل فوراً في شاشة المعاينة
+        try {
+            val mediaItem = MediaItem.fromUri(mediaUri)
+            exoPlayer.setMediaItem(mediaItem)
+            exoPlayer.prepare()
+            exoPlayer.playWhenReady = true
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
-    // تحديث موضع مؤشر التشغيل
-    fun seekTo(positionUs: Long) {
-        _currentPositionUs.value = positionUs
-    }
-
-    // تحديد مقطع معين
-    fun selectClip(clipId: String) {
-        _selectedClipId.value = clipId
-    }
-
-    // قص المقطع (Blade) عند موضع المؤشر
-    fun splitClipAtPlayhead(trackId: String, clipId: String) {
-        // منطق القص التفاعلي
+    override fun onCleared() {
+        super.onCleared()
+        exoPlayer.release()
     }
 }
