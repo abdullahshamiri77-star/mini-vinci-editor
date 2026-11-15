@@ -1,9 +1,8 @@
 package com.minivinci.editor.feature.timeline.presentation.viewmodel
 
-import android.application
-import android.content.Context
+import android.app.Application
+import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.ExoPlayer
@@ -16,7 +15,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
-class TimelineViewModel(application: android.app.Application) : AndroidViewModel(application) {
+class TimelineViewModel(application: Application) : AndroidViewModel(application) {
 
     // تعريف محرك ExoPlayer الحقيقي
     val exoPlayer: ExoPlayer = ExoPlayer.Builder(application).build()
@@ -37,10 +36,7 @@ class TimelineViewModel(application: android.app.Application) : AndroidViewModel
     )
     val projectState: StateFlow<TimelineProject> = _projectState.asStateFlow()
 
-    private val _currentPositionUs = MutableStateFlow(0L)
-    val currentPositionUs: StateFlow<Long> = _currentPositionUs.asStateFlow()
-
-    // استيراد الفيديو وإضافته للتايملاين + تجهيزه مباشرة في مشغل ExoPlayer
+    // استيراد وإضافة الفيديو للمسار وتشغيله مباشرة عبر ExoPlayer
     fun addRealClip(mediaUri: String, trackId: String = "v1") {
         _projectState.update { currentProject ->
             val updatedTracks = currentProject.tracks.map { track ->
@@ -60,7 +56,7 @@ class TimelineViewModel(application: android.app.Application) : AndroidViewModel
             currentProject.copy(tracks = updatedTracks)
         }
 
-        // حقن الملف في مشغل ExoPlayer ليعمل فوراً في شاشة المعاينة
+        // تجهيز مشغل الفيديو وتشغيله فوراً
         try {
             val mediaItem = MediaItem.fromUri(mediaUri)
             exoPlayer.setMediaItem(mediaItem)
