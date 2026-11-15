@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.media3.ui.PlayerView
 import com.minivinci.editor.feature.timeline.presentation.viewmodel.TimelineViewModel
+import com.minivinci.editor.feature.timeline.presentation.components.TimelineTrackRow
 
 @Composable
 fun TimelineScreen(viewModel: TimelineViewModel) {
