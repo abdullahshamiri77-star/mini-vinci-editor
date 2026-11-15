@@ -89,6 +89,7 @@ fun TimelineScreen(viewModel: TimelineViewModel) {
         Spacer(modifier = Modifier.height(12.dp))
 
         // --- مسارات التايملاين المتعددة (V4 إلى A1) ---
+                // --- مسارات التايملاين المتعددة التفاعلية ---
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
@@ -96,28 +97,18 @@ fun TimelineScreen(viewModel: TimelineViewModel) {
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             items(projectState.tracks) { track ->
-                Card(
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E)),
-                    modifier = Modifier.fillMaxWidth().height(50.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = track.trackId.uppercase(),
-                            color = Color.Yellow,
-                            modifier = Modifier.width(40.dp),
-                            fontSize = 12.sp
-                        )
-                        Text(
-                            text = if (track.clips.isEmpty()) "المسار فارغ (اضغط استيراد لإضافة مقطع)" else "عدد المقاطع: ${track.clips.size}",
-                            color = Color.LightGray,
-                            fontSize = 11.sp
-                        )
+                TimelineTrackRow(
+                    trackId = track.trackId,
+                    clips = track.clips,
+                    onClipClick = { selectedClip ->
+                        // تفاعل النقر على المقطع
+                    },
+                    onScrub = { dragAmount ->
+                        // تفاعل السحب لتحريك المؤشر بدقة
                     }
-                }
+                )
             }
         }
     }
 }
+
