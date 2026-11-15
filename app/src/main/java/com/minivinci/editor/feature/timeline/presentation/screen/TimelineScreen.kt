@@ -22,7 +22,6 @@ import com.minivinci.editor.feature.timeline.presentation.viewmodel.TimelineView
 @Composable
 fun TimelineScreen(viewModel: TimelineViewModel) {
     val projectState by viewModel.projectState.collectAsState()
-    val context = LocalContext.current
 
     val videoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -38,7 +37,7 @@ fun TimelineScreen(viewModel: TimelineViewModel) {
             .background(Color(0xFF121212))
             .padding(12.dp)
     ) {
-        // --- الشريط العلوي الاحترافي ---
+        // --- الشريط العلوي للتحكم واستيراد الفيديو ---
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -68,7 +67,7 @@ fun TimelineScreen(viewModel: TimelineViewModel) {
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        // --- شاشة المعاينة الحقيقية المزودة بـ ExoPlayer PlayerView ---
+        // --- شاشة المعاينة الحقيقية (ExoPlayer PlayerView) ---
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -80,7 +79,7 @@ fun TimelineScreen(viewModel: TimelineViewModel) {
                 factory = { ctx ->
                     PlayerView(ctx).apply {
                         player = viewModel.exoPlayer
-                        useController = true // إظهار أزرار التحكم بالتشغيل والإيقاف المؤقت
+                        useController = true
                     }
                 },
                 modifier = Modifier.fillMaxSize()
@@ -89,7 +88,7 @@ fun TimelineScreen(viewModel: TimelineViewModel) {
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // --- مسارات التايملاين المتعددة ---
+        // --- مسارات التايملاين المتعددة (V4 إلى A1) ---
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
@@ -112,7 +111,7 @@ fun TimelineScreen(viewModel: TimelineViewModel) {
                             fontSize = 12.sp
                         )
                         Text(
-                            text = if (track.clips.isEmpty()) "المسار فارغ (اضغط استيراد لإضافة مقطع)" else "مقطع مسجل: ${track.clips.first().clipId}",
+                            text = if (track.clips.isEmpty()) "المسار فارغ (اضغط استيراد لإضافة مقطع)" else "عدد المقاطع: ${track.clips.size}",
                             color = Color.LightGray,
                             fontSize = 11.sp
                         )
